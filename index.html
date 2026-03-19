@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atelier SRT - Traduction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-shape bg-shape-1" aria-hidden="true"></div>
+    <div class="bg-shape bg-shape-2" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">Enseignement Technologique en Langue Vivante</p>
+          <h1>Traduction de sous-titres</h1>
+          <p class="subtitle">Chargez un fichier, traduisez à droite, exportez le résultat.</p>
+        </div>
+
+        <div class="toolbar">
+          <a class="btn btn-secondary" href="professeur.html">Version professeur</a>
+          <button id="openGuidelinesBtn" class="btn btn-secondary" type="button">Bonnes pratiques</button>
+          <label for="srtFile" class="btn btn-primary">Charger un fichier SRT</label>
+          <input id="srtFile" type="file" accept=".srt" />
+          <label for="videoFile" class="btn btn-secondary">Charger une vidéo</label>
+          <input id="videoFile" type="file" accept="video/*,.mkv,video/x-matroska" />
+          <button id="playFromFirstBtn" class="btn btn-secondary" disabled>Lancer la lecture</button>
+          <label for="translationFile" id="loadTranslationBtn" class="btn btn-secondary" aria-disabled="true"
+            >Charger une traduction en cours</label
+          >
+          <input id="translationFile" type="file" accept=".srt" disabled />
+          <button id="downloadBtn" class="btn btn-secondary" disabled>Télécharger la traduction</button>
+        </div>
+      </header>
+
+      <section id="videoPanel" class="video-panel hidden" aria-label="Lecteur vidéo">
+        <div class="video-stage">
+          <video id="videoPlayer" controls preload="metadata"></video>
+          <div id="videoSubtitleOverlay" class="video-subtitle-overlay" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <nav class="resource-links" aria-label="Dictionnaires pour la traduction">
+        <span class="resource-label">Ressources utiles :</span>
+        <a href="https://www.wordreference.com/" target="_blank" rel="noopener noreferrer">WordReference</a>
+        <a href="https://www.linguee.fr/" target="_blank" rel="noopener noreferrer">Linguee</a>
+        <a href="https://vitrinelinguistique.oqlf.gouv.qc.ca/" target="_blank" rel="noopener noreferrer"
+          >Vitrine linguistique OQLF</a
+        >
+      </nav>
+
+      <p id="statusMessage" class="status-message" aria-live="polite"></p>
+
+      <section id="emptyState" class="empty-state">
+        <h2>Prêt pour votre séance</h2>
+        <p>
+          Commencez par charger un fichier <strong>.srt</strong>. Les sous-titres originaux seront affichés à
+          gauche et les élèves pourront traduire à droite.
+        </p>
+      </section>
+
+      <section id="editorLayout" class="editor-layout hidden" aria-live="polite">
+        <div class="column column-original">
+          <div class="column-head">
+            <h2>Original</h2>
+            <p>Lecture seule</p>
+          </div>
+          <div id="originalList" class="subtitle-list"></div>
+        </div>
+
+        <div class="column column-translation">
+          <div class="column-head">
+            <h2>Traduction élève</h2>
+            <p>Éditable</p>
+          </div>
+          <div id="translationList" class="subtitle-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="guidelinesModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="guidelinesTitle">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h2 id="guidelinesTitle">Bonnes pratiques du sous-titrage</h2>
+          <button id="closeGuidelinesBtn" class="modal-close" type="button" aria-label="Fermer">×</button>
+        </div>
+        <div class="modal-body">
+          <ul>
+            <li>
+              Si le sous-titre fait deux lignes, essayez de faire en sorte que la ligne du haut soit plus courte que
+              celle du bas (forme de pyramide normale), ce qui fatigue moins l'œil et dégage le centre de l'image.
+            </li>
+            <li>Jamais plus de 2 lignes à la fois sur l'écran pour ne pas cacher l'image.</li>
+            <li>
+              37 caractères par ligne maximum (espaces compris). Cela évite au spectateur de devoir balayer l'écran
+              des yeux.
+            </li>
+            <li>
+              À éviter : Séparer un article de son nom ("le / chat"), un pronom de son verbe ("il / mange"), ou un
+              adjectif de son nom ("une belle / voiture").
+            </li>
+            <li>Astuce : Coupez après la ponctuation ou avant les conjonctions (et, mais, ou, parce que).</li>
+            <li>Supprimez les mots de remplissage ("euh", "en fait", "tu vois").</li>
+            <li>
+              N'hésitez pas à reformuler et à condenser l'idée pour respecter les contraintes de vitesse de lecture.
+              L'objectif est de transmettre le sens, pas forcément le mot à mot.
+            </li>
+            <li>
+              Tirets cadratins (-) : Utilisez un tiret au début de la ligne quand deux personnes différentes parlent
+              dans le même sous-titre (une personne par ligne).
+            </li>
+            <li>
+              Italique : S'utilise pour indiquer une voix hors-champ (voix off, narrateur, voix au téléphone, voix
+              venant de la télévision ou de la radio) ou pour les mots étrangers.
+            </li>
+            <li>
+              Points de suspension (...) : Utilisez-les à la fin d'un sous-titre si la phrase est inachevée ou
+              interrompue, ou si la phrase continue sur le sous-titre suivant.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <template id="subtitleRowTemplate">
+      <article class="subtitle-row">
+        <header>
+          <span class="subtitle-index"></span>
+          <span class="subtitle-time"></span>
+        </header>
+        <div class="subtitle-content"></div>
+      </article>
+    </template>
+
+    <button id="scrollTopBtn" class="scroll-top-btn hidden" type="button" aria-label="Remonter en haut">
+      Haut de page
+    </button>
+
+    <script src="app.js"></script>
+  </body>
+</html>

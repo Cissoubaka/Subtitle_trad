@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atelier SRT - Version professeur</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;700;800&family=Sora:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="professeur.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-1" aria-hidden="true"></div>
+    <div class="ambient ambient-2" aria-hidden="true"></div>
+
+    <main class="teacher-shell">
+      <header class="teacher-header">
+        <div>
+          <p class="eyebrow">Tableau de correction</p>
+          <h1>Version professeur</h1>
+          <p class="lead">Choisissez un original et un dossier d'exports eleves, puis comparez cote a cote.</p>
+        </div>
+        <a class="back-link" href="index.html">Retour version eleve</a>
+      </header>
+
+      <section class="teacher-controls" aria-label="Chargement des fichiers">
+        <div class="field-group">
+          <label for="originalFile" class="field-label">Sous-titre original</label>
+          <input id="originalFile" type="file" accept=".srt" />
+        </div>
+
+        <div class="field-group">
+          <label for="studentFolder" class="field-label">Dossier des fichiers eleves</label>
+          <input id="studentFolder" type="file" webkitdirectory directory multiple accept=".srt" />
+        </div>
+
+        <button id="clearBtn" type="button" class="clear-btn">Reinitialiser</button>
+        <button id="saveStateBtn" type="button" class="ghost-btn">Sauvegarder l'etat</button>
+        <button id="exportReportBtn" type="button" class="ghost-btn">Exporter le bilan CSV</button>
+      </section>
+
+      <p id="statusMessage" class="status-message" aria-live="polite"></p>
+      <p id="selectionMemory" class="selection-memory" aria-live="polite"></p>
+
+      <section id="selectionPanel" class="selection-panel hidden" aria-label="Selection des copies eleves">
+        <div class="panel-head">
+          <h2>Fichiers eleves detectes</h2>
+          <p>Chaque fichier a une couleur dediee, reutilisee dans la colonne unique "Eleves".</p>
+        </div>
+        <div id="studentFileList" class="student-file-list"></div>
+      </section>
+
+      <section id="comparisonPanel" class="comparison-panel hidden" aria-label="Comparaison des sous-titres">
+        <div class="panel-head">
+          <h2>Comparaison originale / eleves</h2>
+          <p id="comparisonMeta"></p>
+        </div>
+        <div class="table-wrap">
+          <table id="comparisonTable" class="comparison-table">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <button id="scrollTopBtn" class="scroll-top-btn hidden" type="button" aria-label="Remonter en haut">
+      Haut de page
+    </button>
+
+    <script src="professeur.js"></script>
+  </body>
+</html>
