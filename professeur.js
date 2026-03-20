@@ -3,6 +3,7 @@ const studentFolderInput = document.getElementById("studentFolder");
 const clearBtn = document.getElementById("clearBtn");
 const saveStateBtn = document.getElementById("saveStateBtn");
 const exportReportBtn = document.getElementById("exportReportBtn");
+const reconstructSubtitleBtn = document.getElementById("reconstructSubtitleBtn");
 const statusMessage = document.getElementById("statusMessage");
 const selectionMemory = document.getElementById("selectionMemory");
 const selectionPanel = document.getElementById("selectionPanel");
@@ -145,6 +146,20 @@ exportReportBtn.addEventListener("click", () => {
   link.remove();
   URL.revokeObjectURL(url);
   setStatus("Bilan CSV exporte.");
+});
+
+reconstructSubtitleBtn.addEventListener("click", () => {
+  if (state.studentFiles.length === 0) {
+    setStatus("Chargez des fichiers eleves avant de reconstruire le sous-titre.");
+    return;
+  }
+
+  if (state.originalEntries.length === 0) {
+    setStatus("Chargez d'abord un fichier original pour reconstruire le sous-titre.");
+    return;
+  }
+
+  reconstructAndDownloadSubtitle();
 });
 
 function getEntryKey(entry) {
@@ -631,6 +646,52 @@ function appendHeaderCell(row, text, className) {
 
 function setStatus(message) {
   statusMessage.textContent = message;
+}
+
+function reconstructAndDownloadSubtitle() {
+  // Créer un tableau pour stocker tous les blocs SRT dans l'ordre
+  const allEntries = [];
+
+  // Parcourir tous les fichiers élèves
+  state.studentFiles.forEach((studentFile) => {
+    // Parcourir chaque entrée du fichier élève
+    studentFile.entries.forEach((entry) => {
+      allEntries.push({
+        time: entry.time,
+        text: entry.text,
+      });
+    });
+  });
+
+  // Trier les entrées par timecode pour assurer l'ordre
+  allEntries.sort((a, b) => {
+    const timeA = parseFloat(a.time.split(" --> ")[0].replace(/:/g, ""));
+    const timeB = parseFloat(b.time.split(" --> ")[0].replace(/:/g, ""));
+    return timeA - timeB;
+  });
+
+  // Formater en SRT avec numérotation appropriée
+  const srtContent = allEntries
+    .map((entry, index) => {
+      return `${index + 1}\n${entry.time}\n${entry.text}`;
+    })
+    .join("\n\n");
+
+  // Créer et télécharger le fichier
+  const blob = new Blob([srtContent], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  const fileBase = state.originalName ? state.originalName.replace(/\.srt$/i, "") : "sous-titre_complet";
+  link.download = `${fileBase}_complet.srt`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+
+  setStatus(
+    `Sous-titre complet reconstruire (${allEntries.length} blocs concatenes et tries par timecode).`
+  );
 }
 
 // Bouton retour en haut
