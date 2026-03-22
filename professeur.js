@@ -4,6 +4,8 @@ const clearBtn = document.getElementById("clearBtn");
 const saveStateBtn = document.getElementById("saveStateBtn");
 const exportReportBtn = document.getElementById("exportReportBtn");
 const reconstructSubtitleBtn = document.getElementById("reconstructSubtitleBtn");
+const splitCountInput = document.getElementById("splitCount");
+const splitSubtitleBtn = document.getElementById("splitSubtitleBtn");
 const statusMessage = document.getElementById("statusMessage");
 const selectionMemory = document.getElementById("selectionMemory");
 const selectionPanel = document.getElementById("selectionPanel");
@@ -160,6 +162,21 @@ reconstructSubtitleBtn.addEventListener("click", () => {
   }
 
   reconstructAndDownloadSubtitle();
+});
+
+splitSubtitleBtn.addEventListener("click", () => {
+  if (state.originalEntries.length === 0) {
+    setStatus("Chargez d'abord un fichier original pour le découper.");
+    return;
+  }
+
+  const numParts = parseInt(splitCountInput.value, 10);
+  if (!Number.isInteger(numParts) || numParts < 2 || numParts > 100) {
+    setStatus("Entrez un nombre entre 2 et 100.");
+    return;
+  }
+
+  splitAndDownloadSubtitle(numParts);
 });
 
 function getEntryKey(entry) {
@@ -692,6 +709,136 @@ function reconstructAndDownloadSubtitle() {
   setStatus(
     `Sous-titre complet reconstruire (${allEntries.length} blocs concatenes et tries par timecode).`
   );
+}
+
+function splitAndDownloadSubtitle(numParts) {
+  if (state.originalEntries.length === 0) {
+    setStatus("Aucun sous-titre à découper.");
+    return;
+  }
+
+  // Découper les entrées intelligemment
+  const parts = splitEntriesIntelligently(state.originalEntries, numParts);
+
+  if (parts.length === 0) {
+    setStatus("Impossible de découper le sous-titre en " + numParts + " parties.");
+    return;
+  }
+
+  // Créer les fichiers SRT avec numérotation continue
+  let globalIndex = 1;
+  const files = parts.map((entries, index) => {
+    const partNumber = String(index + 1).padStart(2, "0");
+    const srtContent = entriesToSrt(entries, globalIndex);
+    globalIndex += entries.length;
+    const fileName = `${state.originalName.replace(/\.srt$/i, "")}.part${partNumber}.srt`;
+    return {
+      name: fileName,
+      content: srtContent,
+    };
+  });
+
+  // Créer la chaîne avec les tailles de chaque partie
+  const partsSizes = parts.map((part) => part.length).join("/");
+
+  // Créer le ZIP et télécharger
+  createAndDownloadZip(files).then(() => {
+    setStatus(
+      `Sous-titre découpe en ${parts.length} partie(s) (${partsSizes}) et fichier ZIP telecharge.`
+    );
+  }).catch(() => {
+    setStatus("Erreur lors de la création du fichier ZIP.");
+  });
+}
+
+function splitEntriesIntelligently(entries, numParts) {
+  if (entries.length === 0 || numParts < 2) {
+    return [];
+  }
+
+  // Si moins d'entrées que de parties demandées, ajuster
+  const actualParts = Math.min(numParts, entries.length);
+
+  // Calculer toutes les positions théoriques de coupure
+  const theoreticalCuts = [];
+  for (let i = 1; i < actualParts; i++) {
+    theoreticalCuts.push(Math.round((i * entries.length) / actualParts));
+  }
+
+  // Pour chaque position théorique, trouver le point de coupure le plus proche qui finit par un point
+  const actualCuts = theoreticalCuts.map((theoreticalPos) => {
+    // Chercher le point le plus proche (avant ou après) finissant par "."
+    let bestPos = theoreticalPos;
+    let bestDistance = Infinity;
+
+    for (let i = 0; i < entries.length; i++) {
+      if (entries[i].text.trim().endsWith(".")) {
+        const distance = Math.abs(i - theoreticalPos);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestPos = i + 1; // +1 car on coupe APRÈS cette entrée
+        }
+      }
+    }
+
+    // Si aucun point trouvé, utiliser la position théorique
+    return bestPos;
+  });
+
+  // Trier les coupures pour s'assurer qu'elles sont dans l'ordre (elles devraient l'être)
+  actualCuts.sort((a, b) => a - b);
+
+  // Créer les parties à partir des coupures
+  const parts = [];
+  let lastCut = 0;
+
+  for (let i = 0; i < actualCuts.length; i++) {
+    const cut = actualCuts[i];
+    // S'assurer que cut > lastCut et cut <= entries.length
+    const finalCut = Math.max(lastCut + 1, Math.min(cut, entries.length));
+    parts.push(entries.slice(lastCut, finalCut));
+    lastCut = finalCut;
+  }
+
+  // Ajouter la dernière partie
+  if (lastCut < entries.length) {
+    parts.push(entries.slice(lastCut));
+  }
+
+  return parts;
+}
+
+function entriesToSrt(entries, startIndex = 1) {
+  return entries
+    .map((entry, index) => {
+      return `${startIndex + index}\n${entry.time}\n${entry.text}`;
+    })
+    .join("\n\n");
+}
+
+async function createAndDownloadZip(files) {
+  const zip = new JSZip();
+
+  // Ajouter chaque fichier au ZIP
+  files.forEach((file) => {
+    zip.file(file.name, file.content);
+  });
+
+  try {
+    const blob = await zip.generateAsync({ type: "blob" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const fileBase = state.originalName ? state.originalName.replace(/\.srt$/i, "") : "sous-titres";
+    link.download = `${fileBase}_parties.zip`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Erreur lors de la création du ZIP:", error);
+    setStatus("Erreur lors de la création du fichier ZIP.");
+  }
 }
 
 // Bouton retour en haut
