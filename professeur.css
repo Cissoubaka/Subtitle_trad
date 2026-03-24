@@ -159,22 +159,6 @@ input[type="number"] {
   max-width: 220px;
 }
 
-.split-input-group {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-.split-input-group input[type="number"] {
-  flex: 1;
-  margin: 0;
-}
-
-.split-input-group button {
-  height: fit-content;
-  white-space: nowrap;
-}
-
 .clear-btn {
   align-self: end;
   height: fit-content;

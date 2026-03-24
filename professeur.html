@@ -41,14 +41,14 @@
         <button id="saveStateBtn" type="button" class="ghost-btn">Sauvegarder l'etat</button>
         <button id="exportReportBtn" type="button" class="ghost-btn">Exporter le bilan CSV</button>
         <button id="reconstructSubtitleBtn" type="button" class="ghost-btn">Reconstruire le sous-titre complet</button>
+      </section>
 
-        <div class="field-group">
-          <label for="splitCount" class="field-label">Découper le sous-titre en parties</label>
-          <div class="split-input-group">
-            <input id="splitCount" type="number" min="2" max="100" placeholder="Nombre de parties" />
-            <button id="splitSubtitleBtn" type="button" class="ghost-btn">Découper et télécharger</button>
-          </div>
+      <section class="split-controls" aria-label="Decoupage du sous-titre original">
+        <div class="field-group split-group">
+          <label for="splitPartsInput" class="field-label">Nombre de parties</label>
+          <input id="splitPartsInput" type="number" min="2" step="1" value="2" />
         </div>
+        <button id="splitOriginalBtn" type="button" class="ghost-btn">Decouper l'original en parties</button>
       </section>
 
       <p id="statusMessage" class="status-message" aria-live="polite"></p>
@@ -80,7 +80,7 @@
       Haut de page
     </button>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="jszip.min.js"></script>
     <script src="professeur.js"></script>
   </body>
 </html>
