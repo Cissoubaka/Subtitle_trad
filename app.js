@@ -7,6 +7,8 @@ const playFromFirstBtn = document.getElementById("playFromFirstBtn");
 const videoPanel = document.getElementById("videoPanel");
 const videoPlayer = document.getElementById("videoPlayer");
 const videoSubtitleOverlay = document.getElementById("videoSubtitleOverlay");
+const subtitleOriginalBtn = document.getElementById("subtitleOriginalBtn");
+const subtitleTranslationBtn = document.getElementById("subtitleTranslationBtn");
 const openGuidelinesBtn = document.getElementById("openGuidelinesBtn");
 const closeGuidelinesBtn = document.getElementById("closeGuidelinesBtn");
 const guidelinesModal = document.getElementById("guidelinesModal");
@@ -29,11 +31,25 @@ let sourceFileName = "traduction";
 let isSyncingScroll = false;
 let videoObjectUrl = null;
 let subtitleTimeline = [];
+let currentSubtitleMode = "translation";
 
 setupLinkedScrolling();
 videoPlayer.addEventListener("timeupdate", updateVideoSubtitleByCurrentTime);
 videoPlayer.addEventListener("seeked", updateVideoSubtitleByCurrentTime);
 videoPlayer.addEventListener("loadedmetadata", updateVideoSubtitleByCurrentTime);
+subtitleOriginalBtn.addEventListener("click", () => {
+  currentSubtitleMode = "original";
+  updateSubtitleModeButtons();
+  updateVideoSubtitleByCurrentTime();
+});
+subtitleTranslationBtn.addEventListener("click", () => {
+  currentSubtitleMode = "translation";
+  updateSubtitleModeButtons();
+  updateVideoSubtitleByCurrentTime();
+});
+
+subtitleOriginalBtn.disabled = true;
+subtitleTranslationBtn.disabled = true;
 
 window.addEventListener("resize", () => {
   alignRowHeights();
@@ -84,6 +100,9 @@ videoInput.addEventListener("change", (event) => {
   videoPlayer.src = videoObjectUrl;
   videoPanel.classList.remove("hidden");
   playFromFirstBtn.disabled = false;
+  subtitleOriginalBtn.disabled = false;
+  subtitleTranslationBtn.disabled = false;
+  updateSubtitleModeButtons();
   setStatus("Vidéo chargée. Vous pouvez lancer la lecture depuis le premier sous-titre.");
 });
 
@@ -595,8 +614,14 @@ function updateVideoSubtitleByCurrentTime() {
     return;
   }
 
-  const translatedText = (currentSubtitle.entry.translation || "").trim();
-  showVideoSubtitle(translatedText);
+  let displayText = "";
+  if (currentSubtitleMode === "original") {
+    displayText = (currentSubtitle.entry.text || "").trim();
+  } else {
+    displayText = (currentSubtitle.entry.translation || "").trim();
+  }
+
+  showVideoSubtitle(displayText);
 }
 
 function showVideoSubtitle(text) {
@@ -607,4 +632,9 @@ function showVideoSubtitle(text) {
 function toggleScrollTopButtonVisibility() {
   const shouldShow = window.scrollY > 260;
   scrollTopBtn.classList.toggle("hidden", !shouldShow);
+}
+
+function updateSubtitleModeButtons() {
+  subtitleOriginalBtn.classList.toggle("active", currentSubtitleMode === "original");
+  subtitleTranslationBtn.classList.toggle("active", currentSubtitleMode === "translation");
 }
