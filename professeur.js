@@ -18,6 +18,11 @@ const comparisonBody = comparisonTable.querySelector("tbody");
 
 const STORAGE_KEY = "subtitle_trad_professeur_state_v1";
 
+const MAX_LINES = 2;
+const MAX_CHARS_PER_LINE = 37;
+const REPORT_LINE_THRESHOLD = 2;
+const REPORT_CHAR_THRESHOLD = 37;
+
 const state = {
   originalName: "",
   originalPathHint: "",
@@ -492,8 +497,6 @@ function startsWithDialogueDash(metrics) {
 }
 
 function isSubtitleValid(text) {
-  const MAX_LINES = 2;
-  const MAX_CHARS_PER_LINE = 37;
   const metrics = getSubtitleMetrics(text);
 
   if (metrics.lineCount > MAX_LINES) {
