@@ -451,6 +451,62 @@ function formatNoteOn20(validatedCount, totalCount) {
   return `${display}/20`;
 }
 
+function getSubtitleMetrics(text) {
+  const lines = text.split("\n");
+
+  if (lines.length === 1 && lines[0] === "") {
+    return {
+      lines,
+      lineCount: 1,
+      lineLengths: [0],
+    };
+  }
+
+  return {
+    lines,
+    lineCount: lines.length,
+    lineLengths: lines.map((line) => line.length),
+  };
+}
+
+function hasTopHeavyLineBreak(metrics) {
+  if (metrics.lineCount !== 2) {
+    return false;
+  }
+
+  if (startsWithDialogueDash(metrics)) {
+    return false;
+  }
+
+  const line1Length = metrics.lineLengths[0] ?? 0;
+  const line2Length = metrics.lineLengths[1] ?? 0;
+  return line1Length > line2Length;
+}
+
+function startsWithDialogueDash(metrics) {
+  if (metrics.lineCount !== 2) {
+    return false;
+  }
+
+  return (metrics.lines[0] ?? "").trimStart().startsWith("-");
+}
+
+function isSubtitleValid(text) {
+  const MAX_LINES = 2;
+  const MAX_CHARS_PER_LINE = 37;
+  const metrics = getSubtitleMetrics(text);
+
+  if (metrics.lineCount > MAX_LINES) {
+    return false;
+  }
+
+  if (hasTopHeavyLineBreak(metrics)) {
+    return false;
+  }
+
+  return metrics.lineLengths.every((lineLength) => lineLength <= MAX_CHARS_PER_LINE);
+}
+
 function computeMatchRatio(originalEntries, studentEntries) {
   if (originalEntries.length === 0 || studentEntries.length === 0) {
     return { ratio: 0, matchedCount: 0 };
@@ -620,10 +676,23 @@ function renderComparison() {
       const entryHead = document.createElement("header");
       entryHead.className = "student-entry-head";
 
+      const isValid = isSubtitleValid(studentText);
+      if (!isValid) {
+        studentEntry.classList.add("student-entry-invalid");
+      }
+
       const entryName = document.createElement("span");
       entryName.className = "student-entry-name";
       entryName.textContent = studentMap.name;
       entryName.style.color = studentMap.palette?.badge || "#334155";
+
+      if (!isValid) {
+        const warningIcon = document.createElement("span");
+        warningIcon.className = "entry-warning-icon";
+        warningIcon.textContent = "⚠️";
+        warningIcon.setAttribute("title", "Ce sous-titre ne respecte pas les consignes");
+        entryName.insertAdjacentElement("afterbegin", warningIcon);
+      }
 
       entryHead.appendChild(entryName);
 

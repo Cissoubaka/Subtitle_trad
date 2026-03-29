@@ -412,6 +412,16 @@ input[type="number"] {
   font-style: italic;
 }
 
+.entry-warning-icon {
+  margin-right: 6px;
+  font-size: 0.9rem;
+}
+
+.student-entry-invalid {
+  border-color: #d14343 !important;
+  background: #fff3f3 !important;
+}
+
 .hidden {
   display: none;
 }
