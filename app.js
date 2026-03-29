@@ -321,8 +321,10 @@ function buildSrt(subtitles) {
   const stats = computeExportStats(subtitles);
   const reportHeader = [
     "# Statistiques traduction",
+    `# Nombre de sous-titres : ${stats.totalSubtitles}`,
     `# nb >${REPORT_LINE_THRESHOLD} lignes : ${stats.overLineThreshold} sur ${stats.totalSubtitles}`,
     `# nb >${REPORT_CHAR_THRESHOLD} caracteres : ${stats.overCharThreshold} sur ${stats.totalSubtitles}`,
+    `# nb L1 > L2 : ${stats.topHeavyCount} sur ${stats.totalSubtitles}`,
   ].join("\n");
 
   const body = subtitles
@@ -338,6 +340,7 @@ function buildSrt(subtitles) {
 function computeExportStats(subtitles) {
   let overLineThreshold = 0;
   let overCharThreshold = 0;
+  let topHeavyCount = 0;
 
   subtitles.forEach((entry) => {
     const text = entry.translation || "";
@@ -351,12 +354,17 @@ function computeExportStats(subtitles) {
     if (hasLongLine) {
       overCharThreshold += 1;
     }
+
+    if (hasTopHeavyLineBreak(metrics)) {
+      topHeavyCount += 1;
+    }
   });
 
   return {
     totalSubtitles: subtitles.length,
     overLineThreshold,
     overCharThreshold,
+    topHeavyCount,
   };
 }
 
