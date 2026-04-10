@@ -251,18 +251,51 @@ function parseSrt(content) {
   return parsed;
 }
 
+function endsWithSentenceEnd(text) {
+  if (!text || typeof text !== 'string') {
+    return true;
+  }
+  // Détecte si le texte se termine par un point, point d'exclamation, point d'interrogation
+  // suivi optionnellement de guillemets ou parenthèses
+  return /[.!?]["')\]]*\s*$/.test(text.trim());
+}
+
 function renderEntries(subtitles) {
   originalList.textContent = "";
   translationList.textContent = "";
 
   const originalRows = [];
   const translationRows = [];
+  
+  // Calculer les couleurs des phrases
+  const phraseColors = [];
+  let currentPhraseIndex = 0;
+  
+  subtitles.forEach((entry, idx) => {
+    const isEndOfSentence = endsWithSentenceEnd(entry.text);
+    const isPreviousEndOfSentence = idx === 0 || endsWithSentenceEnd(subtitles[idx - 1].text);
+
+    if (isPreviousEndOfSentence && idx > 0) {
+      currentPhraseIndex += 1;
+    }
+
+    // Générer une couleur pour cette phrase si elle n'existe pas
+    if (!phraseColors[currentPhraseIndex]) {
+      const hue = (currentPhraseIndex * 47) % 360; // Distribution des teintes
+      phraseColors[currentPhraseIndex] = `hsl(${hue} 70% 90%)`;
+    }
+    
+    entry.__phraseIndex = currentPhraseIndex;
+    entry.__phraseColor = phraseColors[currentPhraseIndex];
+  });
 
   subtitles.forEach((entry, idx) => {
     const originalRow = subtitleRowTemplate.content.firstElementChild.cloneNode(true);
     originalRow.querySelector(".subtitle-index").textContent = `#${entry.index}`;
     originalRow.querySelector(".subtitle-time").textContent = entry.time;
-    originalRow.querySelector(".subtitle-content").textContent = entry.text;
+    const contentElement = originalRow.querySelector(".subtitle-content");
+    contentElement.textContent = entry.text;
+    originalRow.style.backgroundColor = entry.__phraseColor;
     originalList.appendChild(originalRow);
     originalRows.push(originalRow);
 
