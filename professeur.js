@@ -581,6 +581,15 @@ function renderSelectionPanel() {
   });
 }
 
+function endsWithSentenceEnd(text) {
+  if (!text || typeof text !== 'string') {
+    return true;
+  }
+  // Détecte si le texte se termine par un point, point d'exclamation, point d'interrogation
+  // suivi optionnellement de guillemets ou parenthèses
+  return /[.!?]["')\]]*\s*$/.test(text.trim());
+}
+
 function renderComparison() {
   comparisonHead.textContent = "";
   comparisonBody.textContent = "";
@@ -612,6 +621,7 @@ function renderComparison() {
     matchedCount: studentFile.matchedCount,
   }));
 
+  const rows = [];
   state.originalEntries.forEach((entry, rowIndex) => {
     const row = document.createElement("tr");
 
@@ -715,7 +725,37 @@ function renderComparison() {
     studentsCell.appendChild(stack);
     row.appendChild(studentsCell);
 
-    comparisonBody.appendChild(row);
+    rows.push({
+      element: row,
+      originalText: entry.text,
+    });
+  });
+
+  // Maintenant ajouter les couleurs pour les groupes de phrases
+  let currentPhraseIndex = 0;
+  const phraseColors = [];
+  
+  rows.forEach((rowData, index) => {
+    const isEndOfSentence = endsWithSentenceEnd(rowData.originalText);
+    const isPreviousEndOfSentence = index === 0 || endsWithSentenceEnd(rows[index - 1].originalText);
+
+    if (isPreviousEndOfSentence && index > 0) {
+      currentPhraseIndex += 1;
+    }
+
+    // Générer une couleur pour cette phrase si elle n'existe pas
+    if (!phraseColors[currentPhraseIndex]) {
+      const hue = (currentPhraseIndex * 47) % 360; // Distribution des teintes
+      phraseColors[currentPhraseIndex] = `hsl(${hue} 70% 90%)`;
+    }
+
+    // Appliquer la couleur à la cellule du sous-titre original
+    const originalCell = rowData.element.querySelector(".original-cell");
+    if (originalCell) {
+      originalCell.style.backgroundColor = phraseColors[currentPhraseIndex];
+    }
+
+    comparisonBody.appendChild(rowData.element);
   });
 
   updateComparisonMeta();

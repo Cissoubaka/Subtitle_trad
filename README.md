@@ -1,6 +1,6 @@
 # Atelier de traduction SRT
 
-Application web locale pour travailler la traduction de sous-titres en classe.
+Application web locale pour travailler la traduction de sous-titres en classe dans le cadre de l'ETLV en STI2D.
 
 ## Fonctionnalites
 
