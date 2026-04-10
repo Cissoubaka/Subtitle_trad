@@ -15,6 +15,8 @@ const comparisonMeta = document.getElementById("comparisonMeta");
 const comparisonTable = document.getElementById("comparisonTable");
 const comparisonHead = comparisonTable.querySelector("thead");
 const comparisonBody = comparisonTable.querySelector("tbody");
+const subtitleCountDisplay = document.getElementById("subtitleCountDisplay");
+const sentenceCountDisplay = document.getElementById("sentenceCountDisplay");
 
 const STORAGE_KEY = "subtitle_trad_professeur_state_v1";
 
@@ -52,6 +54,7 @@ originalFileInput.addEventListener("change", async (event) => {
     setStatus("Le fichier original est vide ou invalide.");
     renderSelectionPanel();
     renderComparison();
+    updateStatsDisplay();
     return;
   }
 
@@ -63,6 +66,7 @@ originalFileInput.addEventListener("change", async (event) => {
   renderComparison();
   persistValidationState();
   renderSelectionMemory();
+  updateStatsDisplay();
   setStatus(`Original charge: ${state.originalName} (${state.originalEntries.length} sous-titres).`);
 });
 
@@ -122,6 +126,7 @@ clearBtn.addEventListener("click", () => {
   renderSelectionPanel();
   renderComparison();
   renderSelectionMemory();
+  updateStatsDisplay();
   setStatus("Selection reinitialisee.");
 });
 
@@ -588,6 +593,31 @@ function endsWithSentenceEnd(text) {
   // Détecte si le texte se termine par un point, point d'exclamation, point d'interrogation
   // suivi optionnellement de guillemets ou parenthèses
   return /[.!?]["')\]]*\s*$/.test(text.trim());
+}
+
+function countSentences(entries) {
+  if (!entries || entries.length === 0) {
+    return 0;
+  }
+
+  let sentenceCount = 1;
+  
+  for (let i = 1; i < entries.length; i++) {
+    const previousText = entries[i - 1].text;
+    if (endsWithSentenceEnd(previousText)) {
+      sentenceCount += 1;
+    }
+  }
+  
+  return sentenceCount;
+}
+
+function updateStatsDisplay() {
+  const subtitleCount = state.originalEntries.length;
+  const sentenceCount = countSentences(state.originalEntries);
+  
+  subtitleCountDisplay.textContent = subtitleCount > 0 ? String(subtitleCount) : "—";
+  sentenceCountDisplay.textContent = sentenceCount > 0 ? String(sentenceCount) : "—";
 }
 
 function renderComparison() {

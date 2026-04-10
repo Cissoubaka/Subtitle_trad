@@ -39,7 +39,7 @@ Application web locale pour travailler la traduction de sous-titres en classe da
 
 1. Ouvrir `index.html` dans un navigateur.
 2. Cliquer sur **Charger un fichier SRT**.
-3. Si besoin, cliquer sur **Charger une traduction en cours** pour reprendre la seance precedente.
+3. Si besoin, cliquer sur **Charger une traduction en cours** pour reprendre le travail fait precedemment.
 4. Traduire les sous-titres dans la colonne de droite.
 5. Cliquer sur **Telecharger la traduction** pour recuperer le fichier final.
 

@@ -159,6 +159,32 @@ input[type="number"] {
   max-width: 220px;
 }
 
+.stats-group {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.stat-value {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
 .clear-btn {
   align-self: end;
   height: fit-content;
@@ -445,6 +471,10 @@ input[type="number"] {
   .split-controls {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .stats-group {
+    flex-direction: column;
   }
 
   .clear-btn {
