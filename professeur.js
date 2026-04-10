@@ -17,6 +17,8 @@ const comparisonHead = comparisonTable.querySelector("thead");
 const comparisonBody = comparisonTable.querySelector("tbody");
 const subtitleCountDisplay = document.getElementById("subtitleCountDisplay");
 const sentenceCountDisplay = document.getElementById("sentenceCountDisplay");
+const subtitlesPerPartDisplay = document.getElementById("subtitlesPerPartDisplay");
+const sentencesPerPartDisplay = document.getElementById("sentencesPerPartDisplay");
 
 const STORAGE_KEY = "subtitle_trad_professeur_state_v1";
 
@@ -55,6 +57,7 @@ originalFileInput.addEventListener("change", async (event) => {
     renderSelectionPanel();
     renderComparison();
     updateStatsDisplay();
+    updatePartStatsDisplay();
     return;
   }
 
@@ -67,6 +70,7 @@ originalFileInput.addEventListener("change", async (event) => {
   persistValidationState();
   renderSelectionMemory();
   updateStatsDisplay();
+  updatePartStatsDisplay();
   setStatus(`Original charge: ${state.originalName} (${state.originalEntries.length} sous-titres).`);
 });
 
@@ -127,6 +131,7 @@ clearBtn.addEventListener("click", () => {
   renderComparison();
   renderSelectionMemory();
   updateStatsDisplay();
+  updatePartStatsDisplay();
   setStatus("Selection reinitialisee.");
 });
 
@@ -172,6 +177,14 @@ reconstructSubtitleBtn.addEventListener("click", () => {
   }
 
   reconstructAndDownloadSubtitle();
+});
+
+splitPartsInput.addEventListener("change", () => {
+  updatePartStatsDisplay();
+});
+
+splitPartsInput.addEventListener("input", () => {
+  updatePartStatsDisplay();
 });
 
 splitOriginalBtn.addEventListener("click", async () => {
@@ -618,6 +631,39 @@ function updateStatsDisplay() {
   
   subtitleCountDisplay.textContent = subtitleCount > 0 ? String(subtitleCount) : "—";
   sentenceCountDisplay.textContent = sentenceCount > 0 ? String(sentenceCount) : "—";
+}
+
+function updatePartStatsDisplay() {
+  if (state.originalEntries.length === 0) {
+    subtitlesPerPartDisplay.textContent = "—";
+    sentencesPerPartDisplay.textContent = "—";
+    return;
+  }
+
+  const partsCount = Number.parseInt(splitPartsInput.value, 10);
+  if (Number.isNaN(partsCount) || partsCount < 2) {
+    subtitlesPerPartDisplay.textContent = "—";
+    sentencesPerPartDisplay.textContent = "—";
+    return;
+  }
+
+  const subtitlesPerPart = Math.floor(state.originalEntries.length / partsCount);
+  const remainder = state.originalEntries.length % partsCount;
+  
+  let sentencesPerPart = 0;
+  const totalSentences = countSentences(state.originalEntries);
+  sentencesPerPart = Math.floor(totalSentences / partsCount);
+  
+  const subtitleDisplay = remainder > 0 
+    ? `${subtitlesPerPart}~${subtitlesPerPart + 1}`
+    : String(subtitlesPerPart);
+  
+  const sentenceDisplay = (totalSentences % partsCount) > 0
+    ? `${sentencesPerPart}~${sentencesPerPart + 1}`
+    : String(sentencesPerPart);
+
+  subtitlesPerPartDisplay.textContent = subtitleDisplay;
+  sentencesPerPartDisplay.textContent = sentenceDisplay;
 }
 
 function renderComparison() {
